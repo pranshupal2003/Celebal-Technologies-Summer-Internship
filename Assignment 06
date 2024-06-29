@@ -1,0 +1,108 @@
+#--------------------------------------Part 01------------------------------------------------
+
+# Define the numerical and categorical columns
+numerical_features = ['age', 'salary']
+categorical_features = ['city']
+
+# Preprocessing pipelines for numerical and categorical data
+numerical_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='mean')),
+    ('scaler', StandardScaler())
+])
+
+categorical_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='most_frequent')),
+    ('onehot', OneHotEncoder(handle_unknown='ignore'))
+])
+
+# Combine preprocessing steps
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('num', numerical_transformer, numerical_features),
+        ('cat', categorical_transformer, categorical_features)
+    ]
+)
+
+# Define the target and features
+X = df.drop('purchased', axis=1)
+y = df['purchased']
+
+# Split the data into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Preprocess the data
+X_train_transformed = preprocessor.fit_transform(X_train)
+X_test_transformed = preprocessor.transform(X_test)
+
+# Convert the result to DataFrame for better readability
+X_train_df = pd.DataFrame(X_train_transformed, columns=[f'num_{i}' for i in range(X_train_transformed.shape[1]-2)] + list(preprocessor.named_transformers_['cat'].named_steps['onehot'].get_feature_names_out(categorical_features)))
+X_test_df = pd.DataFrame(X_test_transformed, columns=[f'num_{i}' for i in range(X_test_transformed.shape[1]-2)] + list(preprocessor.named_transformers_['cat'].named_steps['onehot'].get_feature_names_out(categorical_features)))
+
+# Display the transformed data
+X_train_df.head()
+
+
+#------------------------------------------------------------------Part 02------------------------------------------------------------
+
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.impute import SimpleImputer
+from sklearn.model_selection import train_test_split
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+
+# Sample data creation for the purpose of this assignment
+data = {
+    'age': [25, 27, 29, 31, np.nan, 35, 37, 39, np.nan, 42],
+    'salary': [50000, 54000, 58000, np.nan, 62000, 66000, np.nan, 72000, 76000, 80000],
+    'city': ['New York', 'San Francisco', 'Los Angeles', 'Chicago', 'New York', np.nan, 'Chicago', 'Los Angeles', 'San Francisco', 'New York'],
+    'purchased': ['No', 'Yes', 'No', 'Yes', 'Yes', 'No', 'Yes', 'No', 'Yes', 'No']
+}
+df = pd.DataFrame(data)
+
+df.head()
+
+
+#------------------------------------------------------------------Part 03--------------------------------------------------------------------
+
+# Define the numerical and categorical columns
+numerical_features = ['age', 'salary']
+categorical_features = ['city']
+
+# Preprocessing pipelines for numerical and categorical data
+numerical_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='mean')),
+    ('scaler', StandardScaler())
+])
+
+categorical_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='most_frequent')),
+    ('onehot', OneHotEncoder(handle_unknown='ignore'))
+])
+
+# Combine preprocessing steps
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('num', numerical_transformer, numerical_features),
+        ('cat', categorical_transformer, categorical_features)
+    ]
+)
+
+# Define the target and features
+X = df.drop('purchased', axis=1)
+y = df['purchased']
+
+# Split the data into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Preprocess the data
+X_train_transformed = preprocessor.fit_transform(X_train)
+X_test_transformed = preprocessor.transform(X_test)
+
+# Convert the result to DataFrame for better readability
+X_train_df = pd.DataFrame(X_train_transformed, columns=[f'num_{i}' for i in range(X_train_transformed.shape[1]-3)] + list(preprocessor.named_transformers_['cat'].named_steps['onehot'].get_feature_names_out(categorical_features)))
+X_test_df = pd.DataFrame(X_test_transformed, columns=[f'num_{i}' for i in range(X_test_transformed.shape[1]-3)] + list(preprocessor.named_transformers_['cat'].named_steps['onehot'].get_feature_names_out(categorical_features)))
+
+# Display the transformed data
+X_train_df.head()
