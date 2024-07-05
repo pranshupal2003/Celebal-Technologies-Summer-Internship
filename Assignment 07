@@ -1,0 +1,61 @@
+#------------------------------------Step- 01 
+import pandas as pd
+
+# Load the data
+train_df = pd.read_csv('train.csv')
+test_df = pd.read_csv('test.csv')
+
+# Display the first few rows of the training data
+print(train_df.head())
+
+# Display basic statistics
+print(train_df.describe())
+
+#-----------------------------------Step- 02
+# Check for missing values
+missing_values = train_df.isnull().sum().sort_values(ascending=False)
+print(missing_values[missing_values > 0])
+
+# Handling missing values
+# For numerical features, we can fill missing values with the median
+for col in train_df.select_dtypes(include=['float64', 'int64']).columns:
+    train_df[col].fillna(train_df[col].median(), inplace=True)
+
+# For categorical features, we can fill missing values with the mode
+for col in train_df.select_dtypes(include=['object']).columns:
+    train_df[col].fillna(train_df[col].mode()[0], inplace=True)
+
+#----------------------------------------Step- 03
+# One-hot encoding for categorical variables
+train_df = pd.get_dummies(train_df)
+test_df = pd.get_dummies(test_df)
+
+# Align the train and test dataframes by columns
+train_df, test_df = train_df.align(test_df, join='left', axis=1, fill_value=0)
+
+#----------------------------------------Step- 04
+# Example: Create a new feature 'TotalSF' which is the total square footage
+train_df['TotalSF'] = train_df['TotalBsmtSF'] + train_df['1stFlrSF'] + train_df['2ndFlrSF']
+test_df['TotalSF'] = test_df['TotalBsmtSF'] + test_df['1stFlrSF'] + test_df['2ndFlrSF']
+
+#------------------------------------------Step- 05
+from sklearn.preprocessing import StandardScaler
+
+# Separate features and target variable from training data
+X_train = train_df.drop(['SalePrice', 'Id'], axis=1)
+y_train = train_df['SalePrice']
+
+# Scale the features
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(test_df.drop('Id', axis=1))
+
+#---------------------------------------------Step- 06
+# Convert the scaled data back to DataFrame
+X_train_scaled_df = pd.DataFrame(X_train_scaled, columns=X_train.columns)
+X_test_scaled_df = pd.DataFrame(X_test_scaled, columns=test_df.drop('Id', axis=1).columns)
+
+# Save the preprocessed data to CSV files
+X_train_scaled_df.to_csv('X_train_preprocessed.csv', index=False)
+y_train.to_csv('y_train.csv', index=False)
+X_test_scaled_df.to_csv('X_test_preprocessed.csv', index=False)
