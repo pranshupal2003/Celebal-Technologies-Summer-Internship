@@ -1,0 +1,46 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
+# Load the dataset
+url = "https://raw.githubusercontent.com/sonalisingh1411/loan-approval-prediction/main/Training%20Dataset.csv"
+df = pd.read_csv(url)
+
+# Explore the dataset
+print(df.head())
+print(df.info())
+print(df.describe())
+print(df.isnull().sum())
+
+# Handle missing values (example: fill with median for numerical, mode for categorical)
+df['LoanAmount'].fillna(df['LoanAmount'].median(), inplace=True)
+df['Loan_Amount_Term'].fillna(df['Loan_Amount_Term'].mode()[0], inplace=True)
+df['Credit_History'].fillna(df['Credit_History'].mode()[0], inplace=True)
+df['Gender'].fillna(df['Gender'].mode()[0], inplace=True)
+df['Married'].fillna(df['Married'].mode()[0], inplace=True)
+df['Dependents'].fillna(df['Dependents'].mode()[0], inplace=True)
+df['Self_Employed'].fillna(df['Self_Employed'].mode()[0], inplace=True)
+
+# Encode categorical variables
+categorical_features = ['Gender', 'Married', 'Dependents', 'Education', 'Self_Employed', 'Property_Area']
+df = pd.get_dummies(df, columns=categorical_features, drop_first=True)
+
+# Feature engineering (example: total income and income to loan ratio)
+df['Total_Income'] = df['ApplicantIncome'] + df['CoapplicantIncome']
+df['Income_to_Loan_Ratio'] = df['Total_Income'] / df['LoanAmount']
+
+# Drop columns that won't be used for prediction
+df.drop(columns=['Loan_ID', 'ApplicantIncome', 'CoapplicantIncome'], inplace=True)
+
+# Split the dataset
+X = df.drop('Loan_Status', axis=1)
+y = df['Loan_Status'].map({'Y': 1, 'N': 0})  # Convert target to numerical
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Scale numerical features
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+print(X_train.shape, X_test.shape)
